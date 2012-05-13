@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config charset="UTF-8">
+	<var-def name="UrlRoot">http://www.nantesmetropole.fr/</var-def>
+	<!--<var-def name="UrlStart">/pratique/deplacements/stationner-en-centre-ville-28085.kjsp</var-def>-->
+	
+    <script><![CDATA[
+        String cleanupText(String content) {
+        	return content.replaceAll("\"","").replaceAll("\n","");
+        }
+    ]]></script>
+	
+	<var-def name="MainContent">
+    	<html-to-xml><http url="${UrlRoot}${UrlStart}"/></html-to-xml>
+    </var-def>
+    
+	<loop item="UrlParking">
+        <list>
+			<xpath expression="//ul[@class='liste-objets liste-equipements style_0001']//li/em/a/@href">
+				<var name="MainContent"/>
+			</xpath>
+        </list>
+        <body>
+			<script><![CDATA[
+			String fullParkingURL = sys.fullUrl(UrlRoot, UrlParking);
+			]]></script>
+
+			<var-def name="ParkingContent">
+        		<html-to-xml><http url="${fullParkingURL}"/></html-to-xml>
+   		 	</var-def>
+   		 	
+			<var-def name="NameParking">
+			    <text>
+	           	<xpath expression="data(//h2)"><var name="ParkingContent"/></xpath>
+				</text>
+			</var-def>
+			<var-def name="HoraireParking">
+			    <text>
+	           	<xpath expression="data(//div[@id='horaires_ouverture']/p)"><var name="ParkingContent"/></xpath>
+				</text>
+			</var-def>
+			<var-def name="NB_PMR">
+			    <text>
+				<xpath expression="substring-after(data(//div[@id='descriptif']/ul[1]/li[contains(.,'personnes')]), ':')"><var name="ParkingContent"/></xpath>
+				</text>
+			</var-def>
+			<var-def name="NB_ELEC">
+			    <text>
+				<xpath expression="substring-after(data(//div[@id='descriptif']/ul[1]/li[contains(.,'recharge')]), ':')"><var name="ParkingContent"/></xpath>
+				</text>
+			</var-def>
+			<var-def name="NB_VELO">
+			    <text>
+				<xpath expression="substring-after(data(//div[@id='descriptif']/ul[1]/li[contains(.,'motos')]), ':')"><var name="ParkingContent"/></xpath>
+				</text>
+			</var-def>
+			<var-def name="NB_MOTO">
+			    <text>
+				<xpath expression="substring-after(data(//div[@id='descriptif']/ul[1]/li[contains(.,'vélos')]), ':')"><var name="ParkingContent"/></xpath>
+				</text>
+			</var-def>
+
+	
+			<script><![CDATA[
+			String cleanHoraireTxt = cleanupText(HoraireParking.toString());
+			String cleanPmr = cleanupText(NB_PMR.toString());
+			String cleanElec = cleanupText(NB_ELEC.toString());
+			String cleanVelo = cleanupText(NB_VELO.toString());
+			String cleanMoto = cleanupText(NB_MOTO.toString());
+			]]></script>
+	
+	        <file action="append" path="horaires_parkings-nm.csv">
+	        	<template>${NameParking};"${cleanHoraireTxt}";${cleanPmr};${cleanElec};${cleanVelo};${cleanMoto};${sys.lf}</template>
+	        </file>
+        </body>
+    </loop>
+
+
+
+</config>
