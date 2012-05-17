@@ -43,7 +43,7 @@
 			String cleanHoraireTxt = cleanupText(HoraireParking.toString());
 			]]></script>
 	
-	        <file action="append" path="horaires_parkings.csv">
+	        <file action="append" path="horaires_parkings-nge.csv">
 	        	<template>${NameParking};"${cleanHoraireTxt}"${sys.lf}</template>
 	        </file>
         </body>
